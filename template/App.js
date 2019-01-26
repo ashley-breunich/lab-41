@@ -1,8 +1,9 @@
 import * as Expo from 'expo';
 import React from 'react';
-import t from 'tcomb-form-native';
 import { Pedometer } from 'expo';
-import { StyleSheet, Text, View, TextInput, Picker, Image } from 'react-native';
+import { StyleSheet, Text, View, TextInput, Picker, Image, Button, AppRegistry, TouchableOpacity, TouchableHighlight } from 'react-native';
+import { hide } from 'expo/build/launch/SplashScreen';
+import If from './src/components/if.js';
 
 export default class PedometerSensor extends React.Component {
 
@@ -12,7 +13,8 @@ export default class PedometerSensor extends React.Component {
       isPedometerAvailable: "unknown",
       pastStepCount: 0,
       currentStepCount: 0,
-      days: 1
+      days: 1, 
+      showSteps: false,
     }
   }
 
@@ -23,7 +25,7 @@ export default class PedometerSensor extends React.Component {
   componentDidUpdate() {
       const end = new Date();
       const start = new Date();
-      start.setDate(end.getDate() - Number(this.state.days));
+      start.setDate(end.getDate() - this.state.days);
       Pedometer.getStepCountAsync(start, end).then(
         result => {
           this.setState({ pastStepCount: result.steps });
@@ -81,12 +83,31 @@ export default class PedometerSensor extends React.Component {
     this._subscription = null;
   };
 
+  viewSteps = () => {
+    this.setState({
+      showSteps: true
+    });
+  };
+
+  home = () => {
+    this.setState({
+      showSteps: false
+    });
+  }
 
   render() {
     return (
       <>
       <View style={styles.container}>
+      <TouchableHighlight onPress={this.home} underlayColor={"#00B29E"}>
         <Image source={require('./src/images/quick-step.png')} />
+      </TouchableHighlight>
+        <If condition={!this.state.showSteps}>
+          <TouchableOpacity style={styles.button} onPress={this.viewSteps}>
+            <Text style={styles.buttonText}>View Steps Recap</Text>
+          </TouchableOpacity>
+        </If>
+        <If condition={this.state.showSteps}>
         <Text style={[styles.main]}>
         {this.state.days} Day Recap 
         </Text>
@@ -111,6 +132,8 @@ export default class PedometerSensor extends React.Component {
         <Picker.Item label="6 Days" value="6" />
         <Picker.Item label="7 Days" value="7" />
       </Picker>
+        </If>
+        
       </View>
       </>
     );
@@ -128,7 +151,7 @@ const styles = StyleSheet.create({
   },
   container: {
     marginTop: 25,
-    paddingTop: 35,
+    paddingTop: 25,
     flex: 1,
     alignItems: "center",
     backgroundColor: "#00B29E",
@@ -138,7 +161,7 @@ const styles = StyleSheet.create({
     fontSize: 62,
     fontFamily: "HelveticaNeue-Thin",
     letterSpacing: 2.5,
-    marginTop: 40,
+    marginTop: 30,
     marginBottom: 15,
     color: '#00FFE2',
   },
@@ -161,6 +184,19 @@ const styles = StyleSheet.create({
     marginTop: 12,
     color: '#fafafa',
     letterSpacing:.1,
+  },
+  button: {
+    alignItems: 'center',
+    backgroundColor: '#f7d162',
+    padding: 25,
+    fontFamily: "HelveticaNeue-CondensedBold",
+    marginTop: 50,
+  },
+  buttonText: {
+    fontFamily: "HelveticaNeue",
+    fontSize: 20,
+    color: "#333",
+    letterSpacing: .5,
   }
 });
 
