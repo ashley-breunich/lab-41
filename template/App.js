@@ -1,7 +1,7 @@
 import * as Expo from 'expo';
 import React from 'react';
 import { Pedometer } from 'expo';
-import { StyleSheet, Text, View, TextInput, Picker, Image, Button } from 'react-native';
+import { StyleSheet, Text, View, TextInput, Picker, Image, Button, AppRegistry, TouchableOpacity, TouchableHighlight } from 'react-native';
 import { hide } from 'expo/build/launch/SplashScreen';
 import If from './src/components/if.js';
 
@@ -87,18 +87,25 @@ export default class PedometerSensor extends React.Component {
     this.setState({
       showSteps: true
     });
+  };
+
+  home = () => {
+    this.setState({
+      showSteps: false
+    });
   }
 
   render() {
     return (
       <>
       <View style={styles.container}>
+      <TouchableHighlight onPress={this.home} underlayColor={"#00B29E"}>
         <Image source={require('./src/images/quick-step.png')} />
+      </TouchableHighlight>
         <If condition={!this.state.showSteps}>
-          <Button
-            onPress={this.viewSteps}
-            title="View Steps Recap"
-          />
+          <TouchableOpacity style={styles.button} onPress={this.viewSteps}>
+            <Text style={styles.buttonText}>View Steps Recap</Text>
+          </TouchableOpacity>
         </If>
         <If condition={this.state.showSteps}>
         <Text style={[styles.main]}>
@@ -177,6 +184,19 @@ const styles = StyleSheet.create({
     marginTop: 12,
     color: '#fafafa',
     letterSpacing:.1,
+  },
+  button: {
+    alignItems: 'center',
+    backgroundColor: '#f7d162',
+    padding: 25,
+    fontFamily: "HelveticaNeue-CondensedBold",
+    marginTop: 50,
+  },
+  buttonText: {
+    fontFamily: "HelveticaNeue",
+    fontSize: 20,
+    color: "#333",
+    letterSpacing: .5,
   }
 });
 
