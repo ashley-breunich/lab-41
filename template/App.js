@@ -15,12 +15,30 @@ export default class PedometerSensor extends React.Component {
       currentStepCount: 0,
       days: 1, 
       showSteps: false,
+      showLive: false,
     }
   }
 
   componentDidMount() {
     this._subscribe();
   }
+
+  // getNewDate = () => {
+  //   const end = new Date();
+  //     const start = new Date();
+  //     start.setDate(end.getDate() - this.state.days);
+  //     Pedometer.getStepCountAsync(start, end).then(
+  //       result => {
+  //         this.setState({ pastStepCount: result.steps });
+  //       },
+  //       error => {
+  //         this.setState({
+  //           pastStepCount: "Could not get stepCount: " + error
+  //         });
+  //       }
+  //     );
+  // }
+
 
   componentDidUpdate() {
       const end = new Date();
@@ -43,25 +61,25 @@ export default class PedometerSensor extends React.Component {
     window.removeEventListener('beforeunload', this._unsubscribe);
   }
 
-    _subscribe = () => {
-      this._subscription = Pedometer.watchStepCount(result => {
-        this.setState({
-          currentStepCount: result.steps
-        });
+  _subscribe = () => {
+    this._subscription = Pedometer.watchStepCount(result => {
+      this.setState({
+        currentStepCount: result.steps
       });
-  
-      Pedometer.isAvailableAsync().then(
-        result => {
-          this.setState({
-            isPedometerAvailable: String(result)
-          });
-        },
-        error => {
-          this.setState({
-            isPedometerAvailable: "Could not locate device's pedometer" + error
-          });
-        }
-      );
+    });
+
+    Pedometer.isAvailableAsync().then(
+      result => {
+        this.setState({
+          isPedometerAvailable: String(result)
+        });
+      },
+      error => {
+        this.setState({
+          isPedometerAvailable: "Could not locate device's pedometer" + error
+        });
+      }
+    );
   
       const end = new Date();
       const start = new Date();
@@ -84,14 +102,23 @@ export default class PedometerSensor extends React.Component {
   };
 
   viewSteps = () => {
+    this.componentDidUpdate();
     this.setState({
       showSteps: true
     });
   };
 
+  liveSteps = () => {
+    this.setState({
+      showLive: true,
+      days: 1,
+    });
+  };
+
   home = () => {
     this.setState({
-      showSteps: false
+      showSteps: false,
+      showLive: false
     });
   }
 
@@ -102,38 +129,44 @@ export default class PedometerSensor extends React.Component {
       <TouchableHighlight onPress={this.home} underlayColor={"#00B29E"}>
         <Image source={require('./src/images/quick-step.png')} />
       </TouchableHighlight>
-        <If condition={!this.state.showSteps}>
+        <If condition={!this.state.showSteps && !this.state.showLive}>
           <TouchableOpacity style={styles.button} onPress={this.viewSteps}>
             <Text style={styles.buttonText}>View Steps Recap</Text>
           </TouchableOpacity>
         </If>
-        <If condition={this.state.showSteps}>
-        <Text style={[styles.main]}>
-        {this.state.days} Day Recap 
-        </Text>
-        <Text style={styles.stats}>
-        {this.state.pastStepCount} Total Steps
-        </Text>
-        <Text style={styles.description}>
-          Scroll to choose a time frame:
-        </Text>
-        <Picker
-        selectedValue={this.state.days}
-        style={{height: 50, width: 100}}
-        itemStyle = {styles.pickerItem}
-        onValueChange={(itemValue, itemIndex) =>
-          this.setState({days: itemValue})
-        }>
-        <Picker.Item style={[styles.pickerItem]} label="24 Hours" value="1" />
-        <Picker.Item label="48 Hours" value="2" />
-        <Picker.Item label="72 hours" value="3" />
-        <Picker.Item label="4 Days" value="4" />
-        <Picker.Item label="5 Days" value="5" />
-        <Picker.Item label="6 Days" value="6" />
-        <Picker.Item label="7 Days" value="7" />
-      </Picker>
+        <If condition={!this.state.showLive && !this.state.showSteps}>
+          <TouchableOpacity style={styles.button} onPress={this.liveSteps}>
+            <Text style={styles.buttonText}>Track Live Steps</Text>
+          </TouchableOpacity>
         </If>
-        
+        <If condition={this.state.showSteps}>
+          <Text style={[styles.main]}>
+            {this.state.days} Day Recap 
+          </Text>
+          <Text style={styles.stats}>
+            {this.state.pastStepCount} Total Steps
+          </Text>
+          <Text style={styles.description}>
+            Scroll to choose a time frame:
+          </Text>
+          <Picker selectedValue={this.state.days} style={{height: 50, width: 100}} itemStyle = {styles.pickerItem} onValueChange={(itemValue, itemIndex) => this.setState({days: itemValue})}>
+            <Picker.Item style={[styles.pickerItem]} label="24 Hours" value="1" />
+            <Picker.Item label="48 Hours" value="2" />
+            <Picker.Item label="72 hours" value="3" />
+            <Picker.Item label="4 Days" value="4" />
+            <Picker.Item label="5 Days" value="5" />
+            <Picker.Item label="6 Days" value="6" />
+            <Picker.Item label="7 Days" value="7" />
+          </Picker>
+        </If>
+        <If condition={this.state.showLive}>
+          <Text style={[styles.main]}>
+            Start Walking!
+          </Text>
+          <Text style={styles.stats}>
+            You have taken {this.state.pastStepCount + this.state.currentStepCount} Steps in the past 24 hours.
+          </Text>
+        </If>
       </View>
       </>
     );
@@ -155,7 +188,6 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: "center",
     backgroundColor: "#00B29E",
-    // justifyContent: "flex-start",
   },
   main: {
     fontSize: 62,
@@ -171,6 +203,7 @@ const styles = StyleSheet.create({
     textTransform: "uppercase",
     letterSpacing: 3.5,
     color: '#fafafa',
+    textAlign: "center",
   },
   pickerItem: {
     color: '#00FFE2',
@@ -189,11 +222,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: '#f7d162',
     padding: 25,
-    fontFamily: "HelveticaNeue-CondensedBold",
     marginTop: 50,
   },
   buttonText: {
-    fontFamily: "HelveticaNeue",
+    fontFamily: "HelveticaNeue-Light",
     fontSize: 20,
     color: "#333",
     letterSpacing: .5,
