@@ -1,6 +1,6 @@
 import * as Expo from 'expo';
 import React from 'react';
-import { Pedometer } from 'expo';
+import { Pedometer, Accelerometer } from 'expo';
 import { StyleSheet, Text, View, TextInput, Picker, Image, Button, AppRegistry, TouchableOpacity, TouchableHighlight } from 'react-native';
 import { hide } from 'expo/build/launch/SplashScreen';
 import If from './src/components/if.js';
@@ -16,31 +16,17 @@ export default class PedometerSensor extends React.Component {
       days: 1, 
       showSteps: false,
       showLive: false,
+      accelerometerData: {},
     }
   }
 
   componentDidMount() {
     this._subscribe();
+    // this._toggle();
   }
 
-  // getNewDate = () => {
-  //   const end = new Date();
-  //     const start = new Date();
-  //     start.setDate(end.getDate() - this.state.days);
-  //     Pedometer.getStepCountAsync(start, end).then(
-  //       result => {
-  //         this.setState({ pastStepCount: result.steps });
-  //       },
-  //       error => {
-  //         this.setState({
-  //           pastStepCount: "Could not get stepCount: " + error
-  //         });
-  //       }
-  //     );
-  // }
-
-
   componentDidUpdate() {
+    // this._subscribe();
       const end = new Date();
       const start = new Date();
       start.setDate(end.getDate() - this.state.days);
@@ -58,6 +44,7 @@ export default class PedometerSensor extends React.Component {
 
   componentWillUnmount() {
     this._unsubscribe();
+    // this._disconnect();
     window.removeEventListener('beforeunload', this._unsubscribe);
   }
 
@@ -104,14 +91,17 @@ export default class PedometerSensor extends React.Component {
   viewSteps = () => {
     this.componentDidUpdate();
     this.setState({
-      showSteps: true
+      showSteps: true,
+      pastStepCount: this.state.pastStepCount + this.state.currentStepCount,
     });
+    console.log(this.state.pastStepCount, 'past step count');
   };
 
   liveSteps = () => {
     this.setState({
       showLive: true,
       days: 1,
+      currentStepCount: 0
     });
   };
 
@@ -119,6 +109,14 @@ export default class PedometerSensor extends React.Component {
     this.setState({
       showSteps: false,
       showLive: false
+    });
+  }
+
+  clear = () => {
+    this.setState({
+      pastStepCount: this.state.pastStepCount + this.state.currentStepCount,
+      showSteps: false,
+      showLive: false,
     });
   }
 
@@ -164,8 +162,11 @@ export default class PedometerSensor extends React.Component {
             Start Walking!
           </Text>
           <Text style={styles.stats}>
-            You have taken {this.state.pastStepCount + this.state.currentStepCount} Steps in the past 24 hours.
+            You have taken {this.state.currentStepCount} steps.
           </Text>
+          <TouchableOpacity style={styles.button} onPress={this.clear}>
+            <Text style={styles.buttonText}>Add to current steps</Text>
+          </TouchableOpacity>
         </If>
       </View>
       </>
