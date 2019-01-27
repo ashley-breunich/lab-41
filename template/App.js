@@ -159,13 +159,13 @@ export default class PedometerSensor extends React.Component {
         </If>
         <If condition={this.state.showLive}>
           <Text style={[styles.main]}>
-            Start Walking!
+            Walk Now!
           </Text>
-          <Text style={styles.stats}>
+          <Text style={styles.smallerStats}>
             You have taken {this.state.currentStepCount} steps.
           </Text>
           <TouchableOpacity style={styles.button} onPress={this.clear}>
-            <Text style={styles.buttonText}>Add to current steps</Text>
+            <Text style={styles.buttonText}>Store Steps</Text>
           </TouchableOpacity>
         </If>
       </View>
@@ -202,7 +202,15 @@ const styles = StyleSheet.create({
     fontSize: 30,
     fontFamily: "HelveticaNeue-CondensedBold",
     textTransform: "uppercase",
-    letterSpacing: 3.5,
+    letterSpacing: 3,
+    color: '#fafafa',
+    textAlign: "center",
+  },
+  smallerStats: {
+    fontSize: 25,
+    fontFamily: "HelveticaNeue-CondensedBold",
+    textTransform: "uppercase",
+    letterSpacing: 3,
     color: '#fafafa',
     textAlign: "center",
   },
@@ -214,7 +222,7 @@ const styles = StyleSheet.create({
   },
   description: {
     fontFamily: "HelveticaNeue-Light",
-    fontSize: 18,
+    fontSize: 20,
     marginTop: 12,
     color: '#fafafa',
     letterSpacing:.1,
@@ -230,7 +238,7 @@ const styles = StyleSheet.create({
     fontSize: 20,
     color: "#333",
     letterSpacing: .5,
-  }
+  },
 });
 
 Expo.registerRootComponent(PedometerSensor);
